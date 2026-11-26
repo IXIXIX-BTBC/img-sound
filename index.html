@@ -9,9 +9,17 @@
   /* every mode stays loaded; only the one on screen is visible */
   iframe { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; visibility: hidden; }
   iframe.on { visibility: visible; }
+  /* shown until the mode on screen has built its screen */
+  .loading { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: #f9f9f9; color: #1b2a13; font: 14px/1 sans-serif; letter-spacing: .08em; transition: opacity .25s; }
+  .loading.off { opacity: 0; pointer-events: none; }
+  .loading img { width: 116px; }
+  .loading i { width: 140px; height: 2px; background: #d3da9f; overflow: hidden; position: relative; }
+  .loading i::after { content: ''; position: absolute; inset: 0 auto 0 0; width: 40%; background: #1b2a13; animation: ld 1.1s ease-in-out infinite; }
+  @keyframes ld { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
 </style>
 </head>
 <body>
-<script src="js/app.js?v=5"></script>
+<div class="loading js-loading"><img src="img/logo.svg" alt="IMG SOUND"><i></i><span>Loading…</span></div>
+<script src="js/app.js?v=6"></script>
 </body>
 </html>

@@ -7,6 +7,7 @@
 
 :root { --dark: #1b2a13; --mid: #a0b357; --green: #e1e7b1; --green2: #e0e6b4; --gray: #cccccc; --orange: #ff9d00; }
 
+body:not(.ui-on) { visibility: hidden; } /* the page's own (old) screen is never shown while the new one is being built */
 body.ui-on { background: #e5e5e5; color: var(--dark); margin: 0; overflow-x: hidden; }
 body.ui-on > header.hd, body.ui-on > main.px { display: none; }
 body.ui-on.ui-show-old > main.px { display: grid; position: fixed; inset: 0; z-index: 100; overflow: auto; background: #141414; color: #e6e6e6; }

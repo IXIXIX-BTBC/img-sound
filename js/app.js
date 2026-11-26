@@ -16,12 +16,21 @@ function show(mode) {
     document.body.append(f);
   }
   for (const [m, el] of Object.entries(frames)) el.classList.toggle('on', m === mode);
+  waitReady(f);
   f.contentWindow?.focus(); // the keyboard plays the mode on screen
   document.title = 'IMG SOUND · ' + mode;
   if (location.hash.slice(1) !== mode) history.replaceState(null, '', '#' + mode);
   localStorage.setItem(KEY, mode);
 }
 
+// the loading cover stays until the mode on screen has built its screen (its body gets .ui-on), at most 15 s
+const cover = document.querySelector('.js-loading');
+function waitReady(f) {
+  const ready = () => f.contentDocument?.body?.classList.contains('ui-on');
+  if (ready()) { cover.classList.add('off'); return; }
+  cover.classList.remove('off');
+  const t0 = Date.now(), iv = setInterval(() => { if (!f.classList.contains('on')) return clearInterval(iv); if (ready() || Date.now() - t0 > 15000) { clearInterval(iv); cover.classList.add('off'); } }, 100);
+}
 window.__app = {
   // href as written in the pages ("../lead/"): the mode it points to; anything else is ignored
   go(href) { const m = Object.keys(PAGES).find((k) => href.replace(/^\.\.\//, '') === PAGES[k]); if (m) show(m); },
