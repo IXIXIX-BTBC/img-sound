@@ -100,6 +100,7 @@ A sequencer with 6 tracks × 8 patterns.
 - **Autosave**: settings, patterns, photos and recordings are saved in your browser automatically.
 - **Project +**: **Save Project** writes everything (each mode's sound, your saved Sounds, the tempo, Dub's patterns and recordings, and the photos) into one .zip file. **Open Project…** replaces everything with the contents of a Project. Use it to move your work to another computer or browser, too.
 - **Rec Out → Export Mix · WAV**: export what Dub played as a WAV file.
+- **Patterns · WAV**: plays each Dub pattern that makes a sound on its own, records it, and puts one WAV per pattern into a .zip (effects included; the second loop is recorded, so each file loops seamlessly in a DAW). It takes about twice the total pattern length, and you will hear it while it records.
 - **MIDI · Patterns**: export Dub's note patterns as a MIDI file.
 
 ## 6. Keyboard shortcuts

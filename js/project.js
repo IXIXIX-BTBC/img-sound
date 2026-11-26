@@ -70,7 +70,7 @@ async function unpack(v, part) {
 /* ---------- zip (stored, no compression) ---------- */
 const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
 const crc32 = (u) => { let c = 0xffffffff; for (let k = 0; k < u.length; k++) c = CRC[(c ^ u[k]) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
-async function zip(files) { // files: [[name, Uint8Array]]
+export async function zip(files) { // files: [[name, Uint8Array]] (also used by Dub's pattern export)
   const enc = new TextEncoder(), parts = [], cen = []; let off = 0;
   const dt = new Date(), time = (dt.getHours() << 11) | (dt.getMinutes() << 5) | (dt.getSeconds() >> 1), date = ((dt.getFullYear() - 1980) << 9) | ((dt.getMonth() + 1) << 5) | dt.getDate();
   for (const [name, data] of files) {

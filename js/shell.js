@@ -6,7 +6,7 @@
 import { outMeter } from './out.js?v=4';
 import { snapshot, restore } from './presets.js?v=2';
 import { appLinks } from './app-link.js?v=1';
-import { projectButton } from './project.js?v=4';
+import { projectButton } from './project.js?v=5';
 import { DEFAULT_SOUNDS } from './default-sounds.js?v=5';
 
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];

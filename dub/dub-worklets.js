@@ -1,5 +1,6 @@
 // Dub worklets.
-// dub-rec: copies its input to the main thread while recording (for Rec Out).
+// dub-rec: copies its input to the main thread while recording (for Rec Out and the pattern export), each block with
+// the frame it starts at (AudioContext clock), so a recording can be cut exactly.
 class Rec extends AudioWorkletProcessor {
   constructor() {
     super();
@@ -10,7 +11,7 @@ class Rec extends AudioWorkletProcessor {
     if (this.on) {
       const inp = inputs[0];
       const l = inp[0] ? inp[0].slice() : new Float32Array(128), r = inp[1] ? inp[1].slice() : l.slice();
-      this.port.postMessage({ l, r }, [l.buffer, r.buffer]);
+      this.port.postMessage({ l, r, at: currentFrame }, [l.buffer, r.buffer]);
     }
     return true;
   }

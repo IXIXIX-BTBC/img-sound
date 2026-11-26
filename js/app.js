@@ -38,7 +38,7 @@ window.__app = {
   // Open Project (js/project.js): close every mode page first (their pending saves would write over it), then write the
   // project into this browser and start again
   async replace(file) {
-    const p = await import('./project.js?v=4');
+    const p = await import('./project.js?v=5');
     let head; try { head = await p.readProject(file); } catch (e) { alert('開けませんでした: ' + e.message); return; }
     for (const m of Object.keys(frames)) { frames[m].remove(); delete frames[m]; }
     document.body.insertAdjacentHTML('beforeend', '<p style="font:14px sans-serif;padding:24px">Opening project…</p>');

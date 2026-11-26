@@ -10,7 +10,7 @@ import { restore } from '../js/presets.js?v=2';
 import { DEFAULT_SOUNDS } from '../js/default-sounds.js?v=5';
 import { finishRack } from '../js/finish.js?v=9';
 import { appLinks } from '../js/app-link.js?v=1';
-import { projectButton } from '../js/project.js?v=4';
+import { projectButton, zip } from '../js/project.js?v=5';
 appLinks('Dub'); // one-window app: the other modes open beside Dub, which keeps playing
 
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -182,7 +182,7 @@ ui.innerHTML = `
   <div class="ui-abs dub-export">
     <span class="dub-export__ttl">Export</span>
     <button class="js-ex" data-ex="wav" type="button" title="Rec Out で録った音(WAV)"><span>Mix · WAV</span><i>↓</i></button>
-    <button class="js-ex is-dis" data-ex="stems" type="button" title="トラックごとの音(2段目で作ります)"><span>Stems · WAV</span><i>↓</i></button>
+    <button class="js-ex js-expats" data-ex="pats" type="button" title="中身のあるパターンを1つずつ鳴らして録り、WAV を zip にまとめる(エフェクト込み、ループの2周目を録るのでつなぎ目までそのまま)。パターンの長さの合計の2倍の時間がかかる。もう一度押すと中止"><span>Patterns · WAV</span><i>↓</i></button>
     <button class="js-ex is-dis" data-ex="video" type="button" title="映像つき(2段目で作ります)"><span>Video · MP4</span><i>↓</i></button>
     <button class="js-ex" data-ex="midi" type="button" title="全トラックのパターン(MIDI ファイル)"><span>MIDI · Patterns</span><i>↓</i></button>
   </div>
@@ -296,7 +296,7 @@ function audio() {
   if (audioReady) return audioReady.then(() => ctx.state !== 'running' && ctx.resume());
   audioReady = (async () => {
     const c = new AudioContext({ latencyHint: 'interactive' });
-    await c.audioWorklet.addModule('dub-worklets.js?v=8');
+    await c.audioWorklet.addModule('dub-worklets.js?v=9');
     ctx = c;
     master = c.createGain(); master.gain.value = +$('.js-vol').value;
     busIn = c.createGain();
@@ -1404,7 +1404,7 @@ function drawVopts() {
 
 /* ---------- Rec Out + export ---------- */
 let recBufs = null, lastWav = null;
-function onRecData({ data }) { if (data.done) return; if (recBufs) { recBufs.l.push(data.l); recBufs.r.push(data.r); } }
+function onRecData({ data }) { if (data.done) return; if (recBufs) { recBufs.l.push(data.l); recBufs.r.push(data.r); } if (patRec) patRec.push(data); }
 $('.js-recout').addEventListener('click', async () => {
   await audio();
   const b = $('.js-recout');
@@ -1442,11 +1442,57 @@ function midiFile() { // type 1: one track per (Dub track, pattern) that has not
   const n = chunks.length, head = [...str('MThd'), 0, 0, 0, 6, 0, 1, (n >> 8) & 255, n & 255, 0, 96];
   return new Blob([new Uint8Array([...head, ...chunks.flat()])], { type: 'audio/midi' });
 }
+// Patterns · WAV: every filled pattern on its own, one after another: Play, let it loop twice, keep the second pass
+// (so what rings over from the end - echo, reverb, a long note - is already there at its start: a seamless loop),
+// cut exactly to the pattern's length. Mute / solo are set aside meanwhile; everything is put back afterwards.
+let patRec = null, patJob = null;
+async function exportPatterns() {
+  if (patJob) { patJob.cancel = true; return; } // pressed again: stop
+  const sounds = (i, P) => (TRACKS[i].slicer ? P.seed != null && slicePool(P).length > 0 : isAud(i, P) ? !!P.take : P.notes.length > 0); // patterns that make a sound (not just movements)
+  const list = []; TRACKS.forEach((t, i) => T(i).pats.forEach((P, k) => { if (sounds(i, P)) list.push([i, k]); }));
+  if (!list.length) { alert('中身のあるパターンがありません'); return; }
+  await audio();
+  const secs = list.reduce((a, [i, k]) => a + patSteps(T(i).pats[k]) * stepDur() * 2 + 0.4, 0);
+  if (!confirm(`中身のあるパターン ${list.length} 個を、1つずつ鳴らして録ります(約 ${Math.ceil(secs)} 秒)。録っている間は音が鳴ります。`)) return;
+  const btn = $('.js-expats span'), job = (patJob = { cancel: false }), keep = { play: play.map((p) => ({ ...p })), mix: S.tracks.map((t) => [t.mute, t.solo]) };
+  if (tr.on) stop(); recArmed = false; tr.rec = false; drawTransport();
+  S.tracks.forEach((t) => { t.mute = 0; t.solo = 0; }); applyMix();
+  for (let w = 0; w < 200 && (fitBusy || fitQ.size); w++) await sleep(50); // fitted takes ready first
+  const files = [], sr = ctx.sampleRate;
+  try {
+    for (let n = 0; n < list.length && !job.cancel; n++) {
+      const [i, k] = list[n], P = T(i).pats[k], len = patSteps(P) * stepDur();
+      btn.textContent = `Exporting ${n + 1} / ${list.length}`;
+      play.forEach((p) => { p.cur = -1; p.next = undefined; p.silent = false; }); play[i].next = k;
+      patRec = []; recNode.port.postMessage({ on: true });
+      await startStop();
+      const from = Math.round((tr.start + len) * sr), to = from + Math.round(len * sr); // the second pass, in frames
+      while (ctx.currentTime < tr.start + 2 * len + 0.15 && !job.cancel) await sleep(40);
+      stop(); recNode.port.postMessage({ on: false }); await sleep(80);
+      const bl = patRec; patRec = null; if (job.cancel) break;
+      const N = to - from, L = new Float32Array(N), R = new Float32Array(N);
+      for (const b of bl) for (let j = 0; j < b.l.length; j++) { const f = b.at + j - from; if (f >= 0 && f < N) { L[f] = b.l[j]; R[f] = b.r[j]; } }
+      let pk = 0; for (let j = 0; j < N; j++) pk = Math.max(pk, Math.abs(L[j]), Math.abs(R[j])); if (pk < 1e-3) continue; // no sound (only movements recorded): no file
+      const name = `T${TRACKS[i].n}-P${k + 1}_${TRACKS[i].name.replace(/[^A-Za-z0-9]+/g, '-')}.wav`;
+      files.push([name, new Uint8Array(await wav([[L], [R]], N, sr).arrayBuffer())]);
+      { const buf = new Float32Array(outMeter.l?.fftSize || 2048), lvl = () => { if (!outMeter.l) return 0; let m = 0; for (const a of [outMeter.l, outMeter.r]) { a.getFloatTimeDomainData(buf); for (const x of buf) m = Math.max(m, Math.abs(x)); } return m; };
+        for (let w = 0; w < 120 && !job.cancel && lvl() > 3e-4; w++) await sleep(50); } // the last notes, echoes and reverb die away (at most 6 s) before the next one starts
+    }
+    if (!job.cancel && files.length) download(await zip(files), `${S.name}_patterns.zip`);
+  } finally {
+    patRec = null; patJob = null; recNode.port.postMessage({ on: false });
+    if (tr.on) stop();
+    play.forEach((p, i) => Object.assign(p, keep.play[i], { cur: keep.play[i].cur, next: undefined }));
+    S.tracks.forEach((t, i) => { [t.mute, t.solo] = keep.mix[i]; }); applyMix();
+    btn.textContent = job.cancel ? 'Patterns · WAV (stopped)' : 'Patterns · WAV'; drawAll();
+  }
+}
 const download = (blob, name) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); };
 $('.dub-export').addEventListener('click', (e) => {
   const b = e.target.closest('[data-ex]'); if (!b) return;
   if (b.dataset.ex === 'wav') { if (!lastWav) { alert('まだ録っていません。Rec Out を押して録り、もう一度押して止めてから書き出してください'); return; } download(lastWav, `${S.name}.wav`); }
   if (b.dataset.ex === 'midi') download(midiFile(), `${S.name}.mid`);
+  if (b.dataset.ex === 'pats') exportPatterns();
 });
 
 /* ---------- output meter ---------- */
