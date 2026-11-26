@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quake(ベース)— 写真シンセ</title>
+<link rel="stylesheet" href="../css/style.css?v=9">
+<link rel="stylesheet" href="../pixel/pixel.css?v=9">
+<link rel="stylesheet" href="bass.css?v=7">
+<link rel="stylesheet" href="../css/app.css?v=57">
+</head>
+<body data-ui-mode="Quake" data-ui-page="bass">
+<header class="hd">
+  <h1 class="hd__title">Quake <span>ベース:写真の範囲でサイン波に個性を付ける</span></h1>
+  <button class="btn btn--accent js-start" type="button">音を出す</button>
+  <label class="hd__vol">音量 <input type="range" class="js-volume" min="0" max="1" step="0.01" value="0.6"></label>
+  <label class="hd__vol">テンポ <input type="range" class="js-bpm" min="60" max="200" step="1" value="120"><b class="js-bpm-v"></b></label>
+  <button class="btn js-hold" type="button">鳴らしっぱなし(C2)</button>
+  <button class="btn js-panic" type="button" title="止める(Esc)">■ 全部止める</button>
+  <span class="hd__status js-status"></span>
+  <a class="btn px__nav" href="../pixel/">AIR</a>
+  <a class="btn" href="../lead/">Bolt</a>
+  <div class="js-presets"></div>
+</header>
+
+<main class="px">
+  <section class="px__left">
+    <div class="bs__stage">
+      <div class="stage__img js-drop">
+        <canvas class="stage__cv js-img"></canvas>
+        <canvas class="stage__cv stage__cv--ov js-ov"></canvas>
+      </div>
+    </div>
+    <div class="stage__bar">
+      <label class="btn">写真を追加<input type="file" accept="image/*,.heic,.heif" class="js-file" multiple hidden></label>
+      <span class="stage__hint">写真の上をドラッグ=範囲を選ぶ(クリックで解除=写真全体)。写真の一覧は全モード共通</span>
+    </div>
+    <p class="note js-measure"></p>
+    <div class="mx__box" data-only="wob">
+      <div class="wave__head"><b>XYパッド</b><span>パッドを指(マウス)で押さえて動かすと、ワブルを手で操作できます。鍵盤やフレーズで音を鳴らしながら使います</span></div>
+      <div class="loopbar">
+        <div class="tabs loopbar__mode"><button class="tabs__btn" data-xy="0" type="button">使わない</button><button class="tabs__btn" data-xy="1" type="button">A 速さ×開き</button><button class="tabs__btn" data-xy="2" type="button">B 手でワウ</button><button class="tabs__btn" data-xy="3" type="button">C 写真をなぞる</button><button class="tabs__btn" data-xy="4" type="button">D 速さ×手の位置</button></div>
+        <div class="tabs loopbar__mode js-xyflip" hidden><button class="tabs__btn" data-xyflip="0" type="button">縦: ふつう</button><button class="tabs__btn" data-xyflip="1" type="button">縦: 反転</button></div>
+        <div class="tabs loopbar__mode"><button class="tabs__btn" data-xyhold="0" type="button">離すと戻る</button><button class="tabs__btn" data-xyhold="1" type="button">離してもそのまま</button></div>
+      </div>
+      <div class="xy__wrap"><canvas class="js-xy xy__pad" width="520" height="360"></canvas>
+      <div class="xy__help"><p class="note js-xyinfo"></p><p class="note">A=横でLFOの速さ(1/4〜1/32を段で)、縦でどこまで開くか。押さえている間だけワブルが動き、離すと閉じます。<br>B=LFOなし。横がフィルターの開き、縦がクセ。指の動きがそのままワウになります。離すと閉じます。<br>C=写真(選んだ範囲)の上をなぞる。横=写真の道筋のその位置の開きとクセ、縦=その高さの段の波形。離すと、ふだんのワブルに戻ります。<br>D=AとBを合わせたもの。横でLFOの速さ(Aと同じ段)、縦でフィルターの位置を手で決め、LFOはその位置の周りで揺れます(上ほど開いて、クセも強く)。離すと閉じます。「縦: 反転」にすると、上ほど閉じてクセも弱く、下ほど開いてクセも強くなります(Dのときだけ)。<br>離してもそのまま=指を離した位置で保ちます(もう一度パッドを押すと続きから)。フレーズ再生中でも、パッドの指示が優先されます。</p></div></div>
+    </div>
+    <div class="mx__box" data-only="wob">
+      <div class="wave__head"><b>定番のワブルのフレーズ</b><span>型を選んで「フレーズを鳴らす」=今の音(芯・アタック・ひりつき・ワブル)で、テンポに合わせてくり返し鳴らします。鳴らしている間は、鍵盤を押すと根音が変わります</span></div>
+      <div class="loopbar">
+        <button class="btn btn--accent js-seqplay" type="button">▶ フレーズを鳴らす</button>
+        <span class="loopbar__lbl">根音</span><select class="js-seqroot"></select>
+        <div class="tabs loopbar__mode"><button class="tabs__btn" data-seqshape="1" type="button">型のLFOの形を使う</button><button class="tabs__btn" data-seqshape="0" type="button">ワブルの欄の形のまま</button></div>
+        <span class="loopbar__lbl">テンポは上の BPM(定番は140)</span>
+      </div>
+      <div class="phrs js-phrases"></div>
+      <p class="note">各マス=16分音符。C=根音/c=1オクターブ上/G=5度/E♭=短3度、色の帯=伸ばす、暗いマス=休み。下の数字=その拍のワブルのLFOの速さ。どの型も、打ち直すたびにLFOが頭から始まります(「毎回最初から」のとき)。</p>
+    </div>
+    <div class="mx__box">
+      <div class="wave__head"><b>波形</b><span>今の音(<b class="js-note">C2</b>)を3周期。白=写真で個性を付けたサイン/灰=元のサイン</span></div>
+      <canvas class="mx__cv js-scope" width="1200" height="220"></canvas>
+    </div>
+    <div class="mx__box" data-only="wob">
+      <div class="wave__head"><b>ワブルの層</b><span>左=音のもと(範囲を縦に平均した明るさ、2周期)/右=LFOの道筋(点線2本を左→右に読んだ1周期、塗りの高さ=フィルターの開き、点線=レゾナンス、白い線=今の位置)</span></div>
+      <div class="bs__wrow"><canvas class="mx__cv js-wsrc" width="300" height="170"></canvas>
+      <canvas class="mx__cv js-wpath" width="900" height="170"></canvas></div>
+    </div>
+    <div class="mx__box" data-only="bass">
+      <div class="wave__head"><b>ひりつきの層の成分(弾いた瞬間)</b><span>棒=金属弦の倍音(400Hzより上)の位置と強さ/白い目盛=伸びる前の位置/オレンジの帯=キンの高さ</span></div>
+      <canvas class="mx__cv js-gritcv" width="1200" height="150"></canvas>
+    </div>
+    <div class="mx__box" data-only="bass">
+      <div class="wave__head"><b>上の倍音の揺れの形</b><span>選んだ範囲の上・真ん中・下の明るさを左→右に読んだもの。この形で各帯域の強さがゆっくり揺れます</span></div>
+      <canvas class="mx__cv js-shimcv" width="1200" height="150"></canvas>
+    </div>
+    <div class="mx__box">
+      <div class="wave__head"><b>押した瞬間</b><span>最初の120ms(音程のひと押し+クリック+立ち上がり)</span></div>
+      <canvas class="mx__cv js-attack" width="1200" height="160"></canvas>
+    </div>
+    <div class="mx__box">
+      <div class="wave__head"><b>成分(実際に鳴っている音)+EQ</b><span>白=今の音/縦線=1〜8倍音/オレンジの太線=EQの曲線、1〜4の丸をドラッグで調整(ホイール=幅、ダブルクリック=0)</span></div>
+      <canvas class="mx__cv js-spec" width="1200" height="300"></canvas>
+    </div>
+    <p class="note">PCキー A W S E D F T G Y H U J K O L P ; で鍵盤 / Z・X でオクターブ(今 <b class="js-koct">C2</b>)。「鳴らしっぱなし」にして範囲を動かすと、写真で音がどう変わるかを聴けます。</p>
+    <div class="px__list">
+      <div class="wave__head"><b>写真の一覧</b><span>クリックで切り替え</span></div>
+      <div class="pcards js-cards"></div>
+    </div>
+    <div class="px__list">
+      <div class="wave__head"><b>シーン</b><span>写真+範囲を保存。AIR のシーンと共通。押すと呼び出し</span><button class="btn js-addscene" type="button">＋ 今の写真と範囲をシーンに追加</button></div>
+      <div class="pcards js-scenes"></div>
+      <p class="note js-scene-msg"></p>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <div class="grp grp--top">
+      <h2 class="grp__ttl">写真から読んだ個性</h2>
+      <div class="tabs px__tabs"><button class="tabs__btn" data-ab="1" type="button">写真あり</button><button class="tabs__btn" data-ab="0" type="button">写真なし(元のサイン)</button></div>
+      <p class="note">聴き比べ:B キーでも切り替えられます(鳴らしたまま押すと、その場で入れ替わります)。音量は同じにそろえてあります。</p>
+      <div class="row"><span>写真の効き</span><input type="range" class="js-amount" min="0" max="2" step="0.01" value="1"><b class="js-amount-v"></b></div>
+      <div class="mini"><canvas class="js-m-core" width="380" height="70"></canvas><span>写真で個性を付けたサイン(白)</span></div>
+      <div class="bs__chars js-chars"></div>
+      <div class="row"><span>ノイズの効き</span><input type="range" class="js-noiseamt" min="0" max="3" step="0.01" value="1"><b class="js-noiseamt-v"></b></div>
+      <p class="note">ノイズだけは「写真の効き」と別に、範囲のザラつきからの効き方を決められます(0%=なし、100%=写真どおり、300%まで)。</p>
+      <p class="note">選んだ範囲を数えて、サイン波の個性を決めます(右の数字=写真から決まった値)。写真の効き0%=純粋なサイン波、100%=写真どおり、200%=強調。</p>
+    </div>
+    <div class="grp">
+      <h2 class="grp__ttl">音の作り</h2>
+      <div class="tabs px__tabs"><button class="tabs__btn" data-mode="0" type="button">ベース</button><button class="tabs__btn" data-mode="1" type="button">ワブル</button></div>
+      <p class="note">ベース=芯+ひりつき+上の倍音の揺れ(ロックベース寄り)。ワブル=一番下のきれいなサイン(サブ)だけを固定して、写真の個性で足された倍音とワブルの音のもとを、まとめて1つのフィルターで動かす(1本のベースがうねる)。どちらも上の「写真から読んだ個性」が土台です。切り替えても、もう一方の設定は変わりません。</p>
+    </div>
+    <div class="grp" data-only="bass">
+      <h2 class="grp__ttl">ローパス</h2>
+      <div class="tabs px__tabs"><button class="tabs__btn" data-blp="0" type="button">ローパス オフ</button><button class="tabs__btn" data-blp="1" type="button">ローパス オン</button></div>
+      <div class="row"><span>カットオフ</span><input type="range" class="js-bf" min="60" max="8000" step="10" value="1200"><b class="js-bf-v"></b></div>
+      <div class="row"><span>レゾナンス</span><input type="range" class="js-bq" min="0" max="1" step="0.01" value="0.3"><b class="js-bq-v"></b></div>
+      <p class="note">ベースの音全体(芯・ひりつき・クリック)を、1つのローパスに通します。カットオフより上の倍音を削り、レゾナンスでその所にクセを付けます(動かさない固定のフィルター)。</p>
+    </div>
+    <div class="grp" data-only="bass">
+      <h2 class="grp__ttl">ひりつき(ロックベースのキン)</h2>
+      <div class="mini"><canvas class="js-m-grit" width="380" height="70"></canvas><span>範囲の真ん中の明るさ→金属弦の倍音</span></div>
+      <div class="row"><span>ひりつきの量</span><input type="range" class="js-gamt" min="0" max="1.5" step="0.01" value="0.5"><b class="js-gamt-v"></b></div>
+      <div class="row"><span>歪み</span><input type="range" class="js-gdrive" min="0" max="1" step="0.01" value="0.5"><b class="js-gdrive-v"></b></div>
+      <div class="row"><span>キンの高さ</span><input type="range" class="js-gtone" min="400" max="4000" step="10" value="1500"><b class="js-gtone-v"></b></div>
+      <div class="row"><span>保つ時間</span><select class="js-ghold"></select><b class="js-ghold-v"></b></div>
+      <div class="row"><span>落ちる速さ</span><input type="range" class="js-gdrop" min="0.005" max="1" step="0.005" value="0.04"><b class="js-gdrop-v"></b></div>
+      <div class="row"><span>保つ間の減り</span><input type="range" class="js-glen" min="0.05" max="3" step="0.01" value="1"><b class="js-glen-v"></b></div>
+      <div class="row"><span>伸び</span><input type="range" class="js-gstr" min="0" max="2" step="0.01" value="1"><b class="js-gstr-v"></b></div>
+      <p class="note js-gritinfo"></p>
+      <p class="note">範囲の真ん中の明るさを1周期として読んだ倍音で、400Hzより上だけの金属弦を鳴らし、この層だけを歪ませます(芯は変わりません)。弾いた瞬間が一番明るく、「保つ時間」の間は鳴り続け(「保つ間の減り」が長いほど平らに保つ)、その後「落ちる速さ」でスッと消えます(高い倍音ほど先に落ちる)。保つ時間は小節で選ぶので、落ちるタイミングがテンポにそろいます。伸び=高い倍音ほど上にずれる(金属弦の「キン」、写真の輪郭がくっきりなほど強い)。キンの高さ=低め=ゴリッ/高め=チャリッ。0%で今までの音。上の倍音の揺れと一緒に揺れます。</p>
+    </div>
+    <div class="grp" data-only="bass">
+      <h2 class="grp__ttl">上の倍音の揺れ</h2>
+      <div class="mini"><canvas class="js-m-shim" width="380" height="70"></canvas><span>範囲の上・真ん中・下の明るさ→揺れの形</span></div>
+      <div class="row"><span>揺れの量</span><input type="range" class="js-shimamt" min="0" max="2" step="0.01" value="1"><b class="js-shimamt-v"></b></div>
+      <div class="row"><span>揺れの速さ</span><select class="js-shimbars"></select><b class="js-shimbars-v"></b></div>
+      <p class="note js-shiminfo"></p>
+      <p class="note">1〜2倍音(芯)は動かさず、3〜4倍音・5〜8倍音・9倍音から上の3つに分けて、それぞれの強さを範囲から作った形でゆっくり揺らします。範囲の明暗の変化が大きいほど深く揺れます。揺れの速さ=形を1巡する長さを小節で(テンポは上の BPM)。3つとも同じ速さで、「毎回最初から」のときは打ち直すたびに揺れも頭から始まります(音符に揃う)。</p>
+    </div>
+    <div class="grp" data-only="wob">
+      <h2 class="grp__ttl">ワブル</h2>
+      <div class="mini"><canvas class="js-m-wsrc" width="380" height="70"></canvas><span>音のもと:範囲を縦に平均した明るさ=1周期</span></div>
+      <div class="mini"><canvas class="js-m-wpath" width="380" height="70"></canvas><span>LFOの道筋:点線2本の明るさ(LFOの形が「写真の道筋」のとき)</span></div>
+      <div class="tabs px__tabs"><button class="tabs__btn" data-wsrc="photo" type="button">音のもと: 写真</button><button class="tabs__btn" data-wsrc="saw" type="button">ノコギリ</button><button class="tabs__btn" data-wsrc="reese" type="button">リース</button></div>
+      <div class="row"><span>ワブルの量</span><input type="range" class="js-wamt" min="0" max="2" step="0.01" value="1.2"><b class="js-wamt-v"></b></div>
+      <div class="row"><span>LFOの速さ</span><select class="js-wbars"></select><b class="js-wbars-v"></b></div>
+      <div class="row"><span>LFOの形</span><select class="js-wshape"><option value="sine" selected>サイン</option><option value="photo">写真の道筋</option><option value="tri">三角</option><option value="saw">ノコギリ(下がる)</option><option value="square">矩形</option></select><b></b></div>
+      <div class="row"><span>閉じた所</span><input type="range" class="js-wmin" min="40" max="1000" step="5" value="70"><b class="js-wmin-v"></b></div>
+      <div class="row"><span>開いた所</span><input type="range" class="js-wmax" min="300" max="8000" step="10" value="3000"><b class="js-wmax-v"></b></div>
+      <div class="row"><span>クセ</span><input type="range" class="js-wres" min="0" max="1" step="0.01" value="0.8"><b class="js-wres-v"></b></div>
+      <div class="row"><span>写真の動き</span><input type="range" class="js-wphoto" min="0" max="1" step="0.01" value="0.5"><b class="js-wphoto-v"></b></div>
+      <div class="row"><span>サブの量</span><input type="range" class="js-sublv" min="0" max="1.5" step="0.01" value="0.8"><b class="js-sublv-v"></b></div>
+      <p class="note">LFOがフィルターを「閉じた所」と「開いた所」の間で往復させます(初期のワブルの仕組み)。クセ=レゾナンス。写真の動き=波形の走り・細かい揺れ・小節ごとの変化をまとめて増減。サブ=一番下のきれいなサイン波(動かない土台)。音のもと: 写真=範囲を縦に平均した明るさ/ノコギリ=定番/リース=ずらしを広げた3本のうなり。</p>
+      <details class="more"><summary>詳しく</summary>
+        <div class="row"><span>芯の倍音も動かす</span><input type="range" class="js-wcore" min="0" max="1.5" step="0.01" value="1"><b class="js-wcore-v"></b></div>
+        <div class="row"><span>ずらし</span><input type="range" class="js-wdet" min="0" max="40" step="1" value="8"><b class="js-wdet-v"></b></div>
+        <div class="row"><span>歪み</span><input type="range" class="js-wdrive" min="0" max="1" step="0.01" value="0.5"><b class="js-wdrive-v"></b></div>
+        <div class="row"><span>なめらかさ</span><input type="range" class="js-wsmooth" min="0.001" max="0.1" step="0.001" value="0.01"><b class="js-wsmooth-v"></b></div>
+        <div class="row"><span>グライド</span><input type="range" class="js-wglide" min="0" max="0.4" step="0.005" value="0.06"><b class="js-wglide-v"></b></div>
+        <div class="row"><span>波形の走り</span><input type="range" class="js-wscan" min="0" max="1" step="0.01" value="0.4"><b class="js-wscan-v"></b></div>
+        <div class="row"><span>細かい揺れ</span><input type="range" class="js-wjit" min="0" max="1" step="0.01" value="0.15"><b class="js-wjit-v"></b></div>
+        <div class="row"><span>小節ごとの変化</span><input type="range" class="js-wdrift" min="0" max="1" step="0.01" value="0.2"><b class="js-wdrift-v"></b></div>
+        <p class="note">芯の倍音も動かす=写真の個性で足された倍音を、ワブルのフィルターに通す量(0で今まで通り芯は動かない)。ずらし=音のもと3本の音程のずれ。波形の走り=範囲を上から16段に分けた波形を、フィルターの開きと一緒にたどる。細かい揺れ=開きにジリジリした揺れ(ザラザラした範囲ほど強い)、小節ごとの変化=開きの中心がゆっくりさまよう(パーリン)。「毎回最初から」のときは打ち直すたびにLFOも頭から。グライド=次の音へ音程が滑る。</p>
+      </details>
+    </div>
+    <div class="grp">
+      <h2 class="grp__ttl">アタック(押した瞬間のパンチ)</h2>
+      <div class="mini"><canvas class="js-m-attack" width="380" height="70"></canvas><span>押した瞬間の120ms(クリックの硬さ=輪郭)</span></div>
+      <div class="row"><span>音程のひと押し</span><input type="range" class="js-pamt" min="0" max="24" step="0.5" value="7"><b class="js-pamt-v"></b></div>
+      <div class="row"><span>ひと押しの長さ</span><input type="range" class="js-pdec" min="0.005" max="0.3" step="0.001" value="0.06"><b class="js-pdec-v"></b></div>
+      <div class="row"><span>クリックの量</span><input type="range" class="js-clickamt" min="0" max="1" step="0.01" value="0.4"><b class="js-clickamt-v"></b></div>
+      <div class="tabs px__tabs"><button class="tabs__btn" data-ksync="1" type="button">毎回最初から(安定)</button><button class="tabs__btn" data-ksync="0" type="button">走りっぱなし(生っぽい)</button></div>
+      <p class="note js-clickinfo"></p>
+      <p class="note">音程のひと押し=押した瞬間だけ音程を高く始めて、すぐ元に落とす(キックドラムと同じ仕組みの「ドッ」)。クリック=指やピックが当たる「コッ」。硬さは写真の輪郭から(くっきり=短く明るい、ぼんやり=長く鈍い)。どちらも打ち直したときだけ(レガートで滑ったときは出ません)。毎回最初から=波を毎回同じ位置から始め、クリックも毎回同じ(パンチがそろう。前の音が鳴っていたら2msでつなぐ)/走りっぱなし=押すたびに始まり方とクリックが変わる。</p>
+    </div>
+    <div class="grp">
+      <h2 class="grp__ttl">EQ(4バンド)</h2>
+      <div class="tabs px__tabs"><button class="tabs__btn" data-eqon="1" type="button">EQ オン</button><button class="tabs__btn" data-eqon="0" type="button">EQ オフ(聴き比べ)</button></div>
+      <div class="eq js-eq"></div>
+      <div class="loopbar"><button class="btn js-eqreset" type="button">最初の状態に戻す</button></div>
+      <p class="note">4つの帯域それぞれに、種類・帯域(どの高さ)・高さ(どれだけ上げ下げ、±15dB)・幅(どこまで影響するか。小さい=広くなだらか、大きい=狭くとがる)。シェルフは、その高さより下(上)をまとめて上げ下げします(幅は固定)。左の「成分」の表示に、EQの曲線と1〜4の丸が重なっています。丸をドラッグ=帯域と高さ、丸の上でホイール=幅、ダブルクリック=高さ0。</p>
+    </div>
+    <div class="js-finish"></div>
+    <div class="grp">
+      <h2 class="grp__ttl">発音</h2>
+      <div class="row"><span>A 立ち上がり</span><input type="range" class="js-a" min="0.001" max="1" step="0.001" value="0.005"><b class="js-a-v"></b></div>
+      <div class="row"><span>D 落ちる速さ</span><input type="range" class="js-d" min="0.01" max="3" step="0.01" value="0.3"><b class="js-d-v"></b></div>
+      <div class="row"><span>S 残る量</span><input type="range" class="js-s" min="0" max="1" step="0.01" value="0.85"><b class="js-s-v"></b></div>
+      <div class="row"><span>R 離した後</span><input type="range" class="js-r" min="0.01" max="2" step="0.01" value="0.15"><b class="js-r-v"></b></div>
+      <div class="tabs px__tabs"><button class="tabs__btn" data-legato="1" type="button">レガート(押したままは打ち直さない)</button><button class="tabs__btn" data-legato="0" type="button">毎回打ち直す</button></div>
+    </div>
+  </aside>
+</main>
+<script type="module" src="bass.js?v=61"></script>
+<script type="module" src="../js/shell.js?v=58"></script>
+</body>
+</html>

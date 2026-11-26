@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AIR(アンビエント)— 写真シンセ</title>
+<link rel="stylesheet" href="../css/style.css?v=9">
+<link rel="stylesheet" href="pixel.css?v=9">
+<link rel="stylesheet" href="../css/app.css?v=57">
+</head>
+<body data-ui-mode="AIR" data-ui-page="pixel">
+<header class="hd">
+  <h1 class="hd__title">AIR <span>アンビエント:1ピクセルずつ数えて成分を作る</span></h1>
+  <button class="btn btn--accent js-play" type="button">▶ 鳴らす</button>
+  <label class="hd__vol">音量 <input type="range" class="js-volume" min="0" max="1" step="0.01" value="0.6"></label>
+  <button class="btn js-midi" type="button">MIDI 接続</button>
+  <button class="btn js-panic" type="button" title="鳴っている音を全部止める(Esc)">■ 全部止める</button>
+  <span class="hd__status js-status"></span>
+  <a class="btn px__nav" href="../lead/">Bolt</a>
+  <a class="btn" href="../bass/">Quake</a>
+  <a class="btn" href="../">写真シンセ</a>
+  <label class="hd__vol">テンポ <input type="range" class="js-bpm" min="60" max="200" step="1" value="120"><b class="js-bpm-v"></b></label>
+  <div class="js-presets"></div>
+</header>
+
+<main class="px">
+  <section class="px__left">
+    <div class="stage__img js-drop">
+      <canvas class="stage__cv js-img"></canvas>
+      <canvas class="stage__cv stage__cv--ov js-ov"></canvas>
+    </div>
+    <div class="stage__bar">
+      <label class="btn">写真を追加(複数可)<input type="file" accept="image/*,.heic,.heif" class="js-file" multiple hidden></label>
+      <span class="stage__hint">写真の上をドラッグすると、その範囲だけで数えます(クリックで解除)。マス目をクリックすると、その音になったピクセルが光ります</span>
+    </div>
+    <p class="px__stat js-stat"></p>
+    <div class="px__list">
+      <div class="wave__head"><b>写真の一覧</b><span>クリックで切り替え / ▶=選んで C4 で鳴らす / 数字キー 1〜9 で弾きながら切り替え / ここにドロップでも追加</span><button class="btn btn--s js-export" type="button">写真を書き出す</button></div>
+      <div class="pcards js-cards"></div>
+    </div>
+    <div class="px__list read">
+      <div class="wave__head"><b>写真の読み方</b><span>全モード共通(同じ写真はどのモードでも同じ音名で読む)</span></div>
+      <p class="help">色相 → 音名(色相環1周=12半音)/ 明るさ → オクターブ(暗い=低い)/ 色の濃さ → 強さ。灰色に近いピクセルは鳴りません。</p>
+      <div class="js-noteorder"></div>
+    </div>
+    <div class="px__list">
+      <div class="wave__head"><b>ループ</b><span>シーンを順に=気に入った写真+範囲(シーン)を順にたどる(各シーンの前半はとどまり、後半で次へ)。さまよう=スタートの範囲から、パーリンノイズで範囲の位置と広さが変わり続ける。鍵盤はループの上に重ねて弾けます。</span></div>
+      <div class="loopbar">
+        <div class="tabs loopbar__mode"><button class="tabs__btn" data-loopmode="scenes" type="button">シーンを順に</button><button class="tabs__btn" data-loopmode="wander" type="button">さまよう(パーリン)</button></div>
+        <button class="btn js-addscene" type="button">＋ 今の範囲をシーンに追加</button>
+        <button class="btn btn--accent js-loop" type="button">▶ ループ再生</button>
+        <span class="loopbar__lbl" data-scenesopt>1周</span>
+        <div class="tabs loopbar__tabs" data-scenesopt><button class="tabs__btn" data-looplen="30" type="button">30秒</button><button class="tabs__btn" data-looplen="60" type="button">1分</button><button class="tabs__btn" data-looplen="180" type="button">3分</button><button class="tabs__btn" data-looplen="300" type="button">5分</button><button class="tabs__btn" data-looplen="600" type="button">10分</button></div>
+        <label class="loopbar__vol">ループ音量 <input type="range" class="js-loopvol" min="0" max="1.5" step="0.01" value="0.8"><b class="js-loopvol-v"></b></label>
+      </div>
+      <div class="wander" data-wanderopt>
+        <p class="note">スタート=今選んでいる範囲(選んでいなければ写真の真ん中40%)。そこから範囲の位置と広さがゆっくり変わり続けます。保存したシーンがあれば、ときどきそこへ立ち寄ります(別の写真のシーンなら写真ごと移ります)。音は3秒ごとに作ってなめらかにつなぎます。</p>
+        <div class="wander__grid">
+          <div class="row"><span>旅の性格</span><select class="js-wtype"></select><b></b></div>
+          <div class="row"><span>さまよう広さ</span><input type="range" class="js-wrange" min="0" max="1" step="0.01" value="0.5"><b class="js-wrange-v"></b></div>
+          <div class="row"><span>広さの変化</span><input type="range" class="js-wsize" min="0" max="1" step="0.01" value="0.5"><b class="js-wsize-v"></b></div>
+          <div class="row"><span>速さ</span><input type="range" class="js-wspeed" min="0.5" max="20" step="0.1" value="4"><b class="js-wspeed-v"></b></div>
+          <div class="row"><span>速さの揺れ</span><input type="range" class="js-wspeedvar" min="0" max="1" step="0.01" value="0.6"><b class="js-wspeedvar-v"></b></div>
+          <div class="row"><span>戻る力</span><input type="range" class="js-whome" min="0" max="1" step="0.01" value="0.3"><b class="js-whome-v"></b></div>
+          <div class="row"><span>立ち寄り</span><input type="range" class="js-wvisit" min="0" max="1" step="0.01" value="0.5"><b class="js-wvisit-v"></b></div>
+        </div>
+        <div class="loopbar"><div class="tabs loopbar__mode"><button class="tabs__btn" data-wkeep="0" type="button">毎回新しい流れ</button><button class="tabs__btn" data-wkeep="1" type="button">同じ流れをくり返す</button></div><button class="btn js-wnewseed" type="button">新しい種</button><b class="js-wseed loopbar__lbl"></b></div>
+        <p class="note">旅の性格=ゆったり漂う/ときどき鋭く動く/渦を巻く/とどまって移る。さまよう広さ=スタートからどこまで離れるか。広さの変化=範囲の大きさの変わり方(広い=色が混ざった豊かな音、狭い=特定の色の澄んだ音)。速さ=1分あたりのうねりの数。速さの揺れ=しばらく漂ったり、すっと移ったり。戻る力=強いほどスタートの近くにいる。立ち寄り=保存したシーンへ引き寄せられる強さ(0=寄り道なし)。種=同じ種なら同じ流れ。</p>
+      </div>
+      <p class="note js-loop-msg"></p>
+      <div class="loopnow"><canvas class="js-loopview" width="240" height="160"></canvas><span class="js-loop-pos"></span></div>
+      <div class="pcards js-scenes"></div>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <div class="grp grp--top">
+      <h2 class="grp__ttl">音の並べ方</h2>
+      <p class="note">写真の読み方(赤=どの音・色と音の対応)は左の「写真の読み方」で全モード共通。ここはこのモードの音の細かさと音域。</p>
+      <div class="row"><span>音階の細かさ</span><select class="js-fine"><option value="1">半音にそろえる</option><option value="8" selected>細かく(1/8半音)</option></select><b></b></div>
+      <div class="row"><span>暗い側</span><input type="range" class="js-lo" min="0" max="5" step="1" value="2"><b class="js-lo-v"></b></div>
+      <div class="row"><span>明るい側</span><input type="range" class="js-hi" min="2" max="8" step="1" value="7"><b class="js-hi-v"></b></div>
+    </div>
+    <div class="grp">
+      <h2 class="grp__ttl">成分の選び方</h2>
+      <div class="row"><span>山の強調</span><input type="range" class="js-gamma" min="0.3" max="4" step="0.05" value="1.5"><b class="js-gamma-v"></b></div>
+      <div class="row"><span>弱い成分を切る</span><input type="range" class="js-thr" min="0" max="0.5" step="0.005" value="0.05"><b class="js-thr-v"></b></div>
+      <div class="row"><span>成分の最大数</span><input type="range" class="js-max" min="4" max="160" step="1" value="64"><b class="js-max-v"></b></div>
+      <div class="row"><span>近い音をまとめる</span><input type="range" class="js-merge" min="0" max="1" step="0.01" value="0"><b class="js-merge-v"></b></div>
+      <p class="note">山の強調を上げると、多い色だけが残ってはっきりした和音に。下げると、少ない色まで鳴って厚く濁ります。近い音をまとめる=耳が濁りとして感じる幅(高さごとに違う)のうち、この割合より近い成分を、強い方に1つにまとめます。近い音同士のうなり(キリキリ・ウワンウワン)が減ります。0=まとめない。</p>
+    </div>
+    <div class="grp">
+      <h2 class="grp__ttl">響き</h2>
+      <div class="tabs px__tabs px__tabs--3"><button class="tabs__btn" data-harm="normal" type="button">ノーマル</button><button class="tabs__btn" data-harm="consonant" type="button">和音より</button><button class="tabs__btn" data-harm="dissonant" type="button">不協和音より</button></div>
+      <div data-harmopt>
+        <p class="note">一番強い成分を基準の音にして、ほかの成分の音程を寄せます。和音より=選んだ和音の純正な音程へ(うなりのない澄んだ響き、近い音どうしは1つにまとまる)。不協和音より=短2度・増4度・長7度へ寄せ、近い音どうしを少しずらしてこすれ合わせる。</p>
+        <div class="row"><span>寄せる強さ</span><input type="range" class="js-harmamt" min="0" max="1" step="0.01" value="0.7"><b class="js-harmamt-v"></b></div>
+        <div class="row" data-chordopt><span>和音の種類</span><select class="js-chord"><option value="major">長三和音(明るい)</option><option value="minor">短三和音(暗い)</option><option value="open">sus4(開いた響き)</option><option value="seventh">7th(ブルージー)</option></select><b></b></div>
+        <p class="note js-harm-info"></p>
+      </div>
+    </div>
+    <div class="grp">
+      <h2 class="grp__ttl">時間の形(範囲の横=時間)</h2>
+      <div class="tabs px__tabs px__tabs--4"><button class="tabs__btn" data-env="none" type="button">なし</button><button class="tabs__btn" data-env="pixels" type="button">1 ピクセルの位置</button><button class="tabs__btn" data-env="row" type="button">2 その色の行</button><button class="tabs__btn" data-env="rank" type="button">3 上下の順</button></div>
+      <p class="note" data-envopt>1=その成分を作ったピクセルが左右のどこにあるか / 2=その色が一番多い行の明るさを左から読む / 3=上の行ほど高い成分に割り当て、その行の明るさを読む</p>
+      <div data-envopt>
+        <div class="row"><span>範囲の横幅=</span><input type="range" class="js-envdur" min="0.03" max="8" step="0.01" value="2"><b class="js-envdur-v"></b></div>
+        <div class="row"><span>ならし</span><input type="range" class="js-smooth" min="0" max="1" step="0.01" value="0.3"><b class="js-smooth-v"></b></div>
+      </div>
+    </div>
+    <div class="grp">
+      <h2 class="grp__ttl">成分の素材</h2>
+      <div class="tabs px__tabs"><button class="tabs__btn" data-src="sine" type="button">サイン波</button><button class="tabs__btn" data-src="row" type="button">写真の行の波形</button></div>
+      <div data-srcopt>
+        <p class="note">各成分を、その色が一番多い行(写真上の点線)の明るさを1周期として読んだ波形で鳴らします。</p>
+        <div class="row"><span>波形の倍音の数</span><input type="range" class="js-nh" min="1" max="48" step="1" value="12"><b class="js-nh-v"></b></div>
+        <div class="row"><span>サインを混ぜる</span><input type="range" class="js-fund" min="0" max="1" step="0.01" value="0.3"><b class="js-fund-v"></b></div>
+        <p class="note">倍音の数: 少ない=丸くやわらか / 多い=写真の細かい明暗まで入り、明るくざらつく。<br>行に模様のくり返しがあると、その回数倍の高さが強く鳴り、色の音程が弱まります。サインを混ぜると色の音程が保たれます。</p>
+      </div>
+    </div>
+    <div class="grp">
+      <h2 class="grp__ttl">ノイズ(成分の太さ)</h2>
+      <p class="note">各成分のまわりに、その高さだけの細い息のようなノイズをまとわせます。色にばらつきがある成分ほど太く(息っぽく)、均一な色ほど細く(澄んだ音)。</p>
+      <div class="row"><span>ノイズの量</span><input type="range" class="js-noise" min="0" max="1.5" step="0.01" value="0.3"><b class="js-noise-v"></b></div>
+      <div class="row"><span>太さ</span><input type="range" class="js-nwidth" min="0.2" max="4" step="0.05" value="1"><b class="js-nwidth-v"></b></div>
+      <div class="row"><span>ノイズの量の揺れ</span><input type="range" class="js-nwob" min="0" max="1" step="0.01" value="0.5"><b class="js-nwob-v"></b></div>
+      <div class="row"><span>太さの揺れ</span><input type="range" class="js-nwobw" min="0" max="1" step="0.01" value="0.3"><b class="js-nwobw-v"></b></div>
+      <p class="note">ノイズの量と太さも、成分の行のザラつきで揺れます(成分の揺らぎとは別の所を読むので、ずれて動く)。揺らぎの「速さ・音ごとの速さの違い・速さのうねり」が共通でかかります。揺らぎを「なし」にしても、ここは働きます。</p>
+    </div>
+    <div class="grp">
+      <h2 class="grp__ttl">毎回少し違う</h2>
+      <div class="tabs px__tabs"><button class="tabs__btn" data-vary="0" type="button">オフ</button><button class="tabs__btn" data-vary="1" type="button">オン</button></div>
+      <div data-varyopt>
+        <p class="note">押すたびに、選んだ範囲を少しずらした所の音を鳴らします(写真上に水色の枠で一瞬表示)。8回に1回は元の位置に戻ります。1周ごとにずらし方は作り直します。</p>
+        <div class="row"><span>ずらす幅</span><input type="range" class="js-shift" min="0.005" max="0.2" step="0.005" value="0.03"><b class="js-shift-v"></b></div>
+        <p class="note"><span class="js-vary-now"></span> <span class="js-vary-info"></span></p>
+      </div>
+    </div>
+    <div class="js-finish"></div>
+    <div class="grp">
+      <h2 class="grp__ttl">空間</h2>
+      <div class="row"><span>左右の広がり</span><input type="range" class="js-spread" min="0" max="1" step="0.01" value="0.6"><b class="js-spread-v"></b></div>
+      <div class="row"><span>響きの量</span><input type="range" class="js-rvb" min="0" max="1" step="0.01" value="0.3"><b class="js-rvb-v"></b></div>
+      <div class="row"><span>距離</span><input type="range" class="js-dist" min="0" max="1" step="0.01" value="0.2"><b class="js-dist-v"></b></div>
+      <div class="row"><span>空間の広さ(余韻)</span><input type="range" class="js-room" min="0.3" max="8" step="0.1" value="2.5"><b class="js-room-v"></b></div>
+      <p class="note">距離: 遠いほど音がこもり、直接の音が小さく響きが多くなります。</p>
+    </div>
+    <div class="grp">
+      <h2 class="grp__ttl">揺らぎ(写真のザラつきから)</h2>
+      <p class="note">各成分が、自分の行(その色が一番多い行)の明暗を読んで揺れます。行の大きな明暗の起伏=ゆっくりしたうねり、細かいザラつき=小さく速い震え。ピッチと音量の両方が揺れます(1セント=半音の1/100)。</p>
+      <div class="tabs px__tabs"><button class="tabs__btn" data-wob="0" type="button">なし</button><button class="tabs__btn" data-wob="1" type="button">あり</button></div>
+      <div data-wobopt>
+      <div class="row"><span>ピッチの揺れ幅</span><input type="range" class="js-wobcents" min="0" max="50" step="1" value="8"><b class="js-wobcents-v"></b></div>
+      <div class="row"><span>音量の揺れ幅</span><input type="range" class="js-wobampd" min="0" max="1" step="0.01" value="0.35"><b class="js-wobampd-v"></b></div>
+      <div class="row"><span>うねり(ゆっくり)</span><input type="range" class="js-wobslow" min="0" max="1" step="0.01" value="0.75"><b class="js-wobslow-v"></b></div>
+      <div class="row"><span>震え(細かく)</span><input type="range" class="js-wobfast" min="0" max="1" step="0.01" value="0.1"><b class="js-wobfast-v"></b></div>
+      <div class="row"><span>速さ</span><input type="range" class="js-wobspeed" min="0.1" max="4" step="0.05" value="0.35"><b class="js-wobspeed-v"></b></div>
+      <div class="row"><span>音ごとの速さの違い</span><input type="range" class="js-wobvary" min="0" max="1" step="0.01" value="0.6"><b class="js-wobvary-v"></b></div>
+      <div class="row"><span>速さのうねり</span><input type="range" class="js-wobswing" min="0" max="1" step="0.01" value="0.5"><b class="js-wobswing-v"></b></div>
+      <div class="row"><span>そろい具合</span><input type="range" class="js-wobtog" min="0" max="1" step="0.01" value="0.5"><b class="js-wobtog-v"></b></div>
+      <p class="note js-wob-info"></p>
+      <p class="note">音ごとの速さの違い: 行がザラついている音ほど速く震える(0%=全部同じ速さ)。速さのうねり: 行の明るい所に差しかかると震えが速くなる(0%=一定の速さ)。震えは隣の行へ順に移りながら読むので、同じパターンをくり返しません。<br>そろい具合: 100%=全部の成分が一緒に揺れる(1つの物が揺れる)/ 0%=成分ごとにばらばら(きらめく)。</p>
+      </div>
+    </div>
+    <div class="grp">
+      <h2 class="grp__ttl">打鍵の形(1音の音量の形)</h2>
+      <div class="row"><span>A 立ち上がり</span><input type="range" class="js-a" min="0.001" max="2" step="0.001" value="0.003"><b class="js-a-v"></b></div>
+      <div class="row"><span>D 落ちる速さ</span><input type="range" class="js-d" min="0.02" max="4" step="0.01" value="0.4"><b class="js-d-v"></b></div>
+      <div class="row"><span>S 残る量</span><input type="range" class="js-s" min="0" max="1" step="0.01" value="0.3"><b class="js-s-v"></b></div>
+      <div class="row"><span>R 離した後</span><input type="range" class="js-release" min="0.05" max="6" step="0.05" value="1.2"><b class="js-release-v"></b></div>
+      <div class="row"><span>高い成分ほどDが短い</span><input type="range" class="js-hd" min="0" max="1.5" step="0.05" value="0.6"><b class="js-hd-v"></b></div>
+      <div class="row" data-envopt><span>写真の形の効き</span><input type="range" class="js-depth" min="0" max="1" step="0.01" value="0.6"><b class="js-depth-v"></b></div>
+      <p class="note">打鍵感=A を短く・D を短め・S を下げる。アンビエント=A を長く・S を上げる。写真の形(時間の形)は、この形に掛け合わせて揺れや移り変わりになります。</p>
+      <button class="btn btn--accent js-hit" type="button">▶ 1回鳴らす(C4)</button>
+    </div>
+    <div class="grp">
+      <h2 class="grp__ttl">鍵盤</h2>
+      <p class="note">PCキー A W S E D F T G Y H U J K O L P ; / Z・X でオクターブ(今 <b class="js-koct">C4</b>)。MIDI鍵盤も可。<br>C4 = 写真そのままの音程。他のキーは和音全体をその分だけ上下に移します。</p>
+    </div>
+    <div class="grp">
+      <h2 class="grp__ttl">強い成分 <small class="js-pcount"></small></h2>
+      <div class="px__peaks js-peaks"></div>
+    </div>
+  </aside>
+
+  <section class="px__wide">
+    <div class="wave">
+      <div class="wave__head"><b>色相 × 明るさ のマス目</b><span>横=音名(上の帯がその色)/ 縦=オクターブ(上ほど明るい=高い)/ 明るさ=そのマスのピクセル量。右端=灰色(鳴らない)</span></div>
+      <canvas class="px__cv js-grid" width="1400" height="300"></canvas>
+    </div>
+    <div class="wave js-wavesbox">
+      <div class="wave__head"><b>成分の波形(強い6本)</b><span>その色が一番多い行の明るさ = 1周期(2周期分を表示)</span></div>
+      <canvas class="px__cv js-waves" width="1400" height="150"></canvas>
+    </div>
+    <div class="wave">
+      <div class="wave__head"><b>成分ごとの時間の形</b><span class="js-env-note"></span></div>
+      <canvas class="px__cv js-env" width="1400" height="200"></canvas>
+    </div>
+    <div class="wave">
+      <div class="wave__head"><b>1音の形</b><span class="js-strike-info"></span></div>
+      <canvas class="px__cv js-strike" width="1400" height="240"></canvas>
+    </div>
+    <div class="wave">
+      <div class="wave__head"><b>できた成分(スペクトル)</b><span>横=周波数(対数)/ 縦=強さ / 色=元の色</span></div>
+      <canvas class="px__cv js-spec" width="1400" height="220"></canvas>
+    </div>
+  </section>
+</main>
+
+<script type="module" src="pixel.js?v=69"></script>
+<script type="module" src="../js/shell.js?v=58"></script>
+</body>
+</html>
