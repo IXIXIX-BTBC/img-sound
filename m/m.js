@@ -49,11 +49,12 @@ function frameFor(mode) {
   $('.js-engines').append(f);
   const e = (eng[mode] = { f, api: null, base: {}, photoVer: 0, ready: null });
   e.ready = (async () => { // the page's screen is built and its Basic sound applied
-    for (let k = 0; k < 300; k++) { const w = f.contentWindow, d = f.contentDocument; if (w && w[MODES[mode].api] && d?.body?.classList.contains('ui-on')) break; await sleep(50); }
-    await sleep(300);
+    for (let k = 0; k < 300; k++) { const w = f.contentWindow, d = f.contentDocument; if (w && w[MODES[mode].api] && d?.body?.classList.contains('ui-on') && w.__soundReady) break; await sleep(50); } // its Basic sound in place
+    await sleep(100);
     e.api = f.contentWindow[MODES[mode].api]; e.doc = f.contentDocument;
     readBase(mode, e);
     applyAll(mode);
+    e.ok = true; drawReady();
     return e;
   })();
   return e;
@@ -143,6 +144,13 @@ $('.js-knobs').addEventListener('pointerup', (e) => { if (!kd || kd.id !== e.poi
 async function commitKnob(i) { save(); drawKnobs(); name(); const e = await frameFor(st.mode).ready; knobTargets(st.mode, i, knobsOf(st.mode)[i], e); }
 $('.js-env').addEventListener('input', (e) => { const i = +e.target.dataset.e; (st.env[st.mode] ||= [null, null, null, null])[i] = +e.target.value; e.target.style.setProperty('--p', e.target.value * 100 + '%'); drawEnv(); name(); });
 $('.js-env').addEventListener('change', async () => { save(); envTargets(st.mode, await frameFor(st.mode).ready); });
+// Basic: the knobs back to the middle and the strike shape as it was = the mode's Basic sound
+$('.js-basic').addEventListener('click', async () => {
+  const m = st.mode, e = await frameFor(m).ready;
+  st.knobs[m] = [0.5, 0.5, 0.5, 0.5]; delete st.env[m]; save(); drawAll();
+  [0, 1, 2, 3].forEach((i) => knobTargets(m, i, 0.5, e));
+  MODES[m].adsr.forEach((sel) => { if (e.base[sel] != null) setControl(e, sel, e.base[sel]); });
+});
 // Random: the four knobs and the strike shape, within a range that still sounds good
 $('.js-rnd').addEventListener('click', async () => {
   const m = st.mode, e = await frameFor(m).ready;
@@ -152,7 +160,8 @@ $('.js-rnd').addEventListener('click', async () => {
   save(); drawAll(); st.knobs[m].forEach((k, i) => knobTargets(m, i, k, e)); envTargets(m, e);
 });
 $('.js-tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-mode]'); if (!b || b.dataset.mode === st.mode) return; allOff(); st.mode = b.dataset.mode; save(); drawAll(); drawArea(); show(); });
-async function show() { $('.js-status').textContent = 'Loading…'; const e = await frameFor(st.mode).ready; drawEnv(); drawArea(); applyAll(st.mode); $('.js-status').textContent = ''; return e; }
+const drawReady = () => { const ok = !!eng[st.mode]?.ok; $('.js-kb').classList.toggle('is-wait', !ok); $('.js-status').textContent = ok ? '' : 'Loading…'; };
+async function show() { drawReady(); const e = await frameFor(st.mode).ready; drawEnv(); drawArea(); applyAll(st.mode); drawReady(); return e; }
 
 /* ---------- photo + reading area ---------- */
 const cv = $('.js-cv'), area = $('.js-area'); let bmp = null, fit = null;
@@ -208,7 +217,7 @@ function unlock() { // sound may only start from a touch: wake the page's audio 
   try { e.api.ensureCtx(); const c = e.api.ctx; if (c && c.state !== 'running') c.resume(); } catch {}
 }
 function keyOn(pid, el) {
-  const e = eng[st.mode]; if (!e?.api || !el) return;
+  const e = eng[st.mode]; if (!e?.ok || !el) return; // not before the settings are in place
   const id = 'm' + (seq++), midi = 12 * (st.oct + 1) + +el.dataset.s;
   held.set(pid, { el, id, mode: st.mode }); el.classList.add('on');
   MODES[st.mode].on(e.api, id, midi, 0.9);

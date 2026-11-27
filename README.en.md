@@ -41,7 +41,7 @@ The colours of a photo become pitches, its brightness the register, and its patt
 | Keys | Your computer keyboard, or a MIDI keyboard (optional) |
 
 - Some features may not work in Safari or Firefox.
-- **Phones**: the public page opens a phone screen. Choose a photo (Photo +), drag on it to choose the area that is read (Bolt: tap to choose the row), and play the keys at the bottom. Change the sound with four knobs, ADSR and Random (the middle of each knob is the mode's Basic sound). The Stereo view of the sound is drawn over the photo. Portrait only. To use the computer screen on a phone, add `?pc` to the end of the address.
+- **Phones**: the public page opens a phone screen. Choose a photo (Photo +), drag on it to choose the area that is read (Bolt: tap to choose the row), and play the keys at the bottom. Change the sound with four knobs, ADSR and Random, and go back with Basic (the middle of each knob is the mode's Basic sound). The Stereo view of the sound is drawn over the photo. Portrait only. To use the computer screen on a phone, add `?pc` to the end of the address.
 - Photos: JPEG / PNG / WebP / GIF, and HEIC from iPhones.
 
 ## 2. Opening the app

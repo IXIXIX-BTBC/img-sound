@@ -862,7 +862,13 @@ function sounds(ui) {
   for (const ev of ['input', 'change', 'click']) document.addEventListener(ev, (e) => { if (e.isTrusted) recheck(); }, true);
   // the page's start values = its default settings (js/default-sounds.js); they are not added to the Sound list
   // it is shown as "<mode>-Basic" (with * once changed); saving it makes a new Sound
-  if (D) setTimeout(async () => { await restore(D); setTimeout(() => { base = now(); draw(); }, 50); }, 0); // the default sound right away (a key pressed early would otherwise play the page's own start values)
+  // the default sound right away; until it is in place the keys make no sound (they would play the page's own start values)
+  window.__soundReady = !D;
+  if (D) {
+    const hold = (e) => { if (!window.__soundReady && !e.metaKey && !e.ctrlKey && !e.target.closest?.('input[type=text], textarea')) e.stopImmediatePropagation(); };
+    addEventListener('keydown', hold, true); // before the page's own key handlers
+    setTimeout(async () => { await restore(D); window.__soundReady = true; removeEventListener('keydown', hold, true); setTimeout(() => { base = now(); draw(); }, 50); }, 0);
+  }
   $('.js-ui-soundadd', ui).addEventListener('click', async () => {
     if (isDirty() && list().some((p) => p.name === cur)) {
       const c = await saveChoice('Sound', cur); if (!c) return;
