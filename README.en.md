@@ -35,12 +35,13 @@ The colours of a photo become pitches, its brightness the register, and its patt
 
 | | |
 |---|---|
-| OS | Windows / macOS (computers only; phones and tablets are not supported) |
+| OS | Windows / macOS (computers). On phones, a phone screen with AIR / Bolt / Quake (Dub is computer only) |
 | Browser | **Google Chrome** or **Microsoft Edge** (latest version) |
 | Screen | 1440 × 830 or larger recommended (smaller screens are scaled down) |
 | Keys | Your computer keyboard, or a MIDI keyboard (optional) |
 
 - Some features may not work in Safari or Firefox.
+- **Phones**: the public page opens a phone screen. Choose a photo (Photo +), drag on it to choose the area that is read (Bolt: tap to choose the row), and play the keys at the bottom. Change the sound with four knobs, ADSR and Random (the middle of each knob is the mode's Basic sound). The Stereo view of the sound is drawn over the photo. Portrait only. To use the computer screen on a phone, add `?pc` to the end of the address.
 - Photos: JPEG / PNG / WebP / GIF, and HEIC from iPhones.
 
 ## 2. Opening the app

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>IMG SOUND</title>
+<link rel="stylesheet" href="m.css?v=8">
+</head>
+<body>
+<!-- the phone screen (Figma: 写真シンセ UIワイヤー › スマホ版 案). The sound comes from the mode pages, run unseen below. -->
+<header class="hd">
+  <img class="hd__logo" src="../img/logo.svg" alt="IMG SOUND">
+  <nav class="tabs js-tabs"><button type="button" data-mode="AIR">AIR</button><button type="button" data-mode="Bolt">Bolt</button><button type="button" data-mode="Quake">Quake</button></nav>
+</header>
+<section class="photo js-photo">
+  <canvas class="photo__cv js-cv"></canvas>
+  <div class="photo__area js-area" hidden></div>
+  <div class="photo__row js-row" hidden></div>
+  <p class="photo__empty js-empty">Choose a photo to play it</p>
+  <canvas class="photo__wave js-wave"></canvas>
+  <span class="photo__hint js-hint">Drag to choose the area</span>
+  <label class="photo__btn">Photo +<input class="js-file" type="file" accept="image/*,.heic,.heif" hidden></label>
+</section>
+<div class="row">
+  <span class="row__name js-name">AIR-Basic</span>
+  <button class="rnd js-rnd" type="button"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="2.5" stroke="currentColor" stroke-width="1.4"/><circle cx="5" cy="5" r="1.3" fill="currentColor"/><circle cx="11" cy="11" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/></svg>Random</button>
+</div>
+<section class="box box--knobs js-knobs"></section>
+<section class="box box--env"><svg class="env__shape js-shape" width="46" height="28" viewBox="0 0 46 28"><path fill="none" stroke="#1b2a13" stroke-width="1.6" stroke-linejoin="round"/></svg><div class="env__sl js-env"></div></section>
+<div class="oct"><button type="button" class="js-octdn" aria-label="Octave down">‹</button><span class="js-octname">C4</span><button type="button" class="js-octup" aria-label="Octave up">›</button><span class="oct__status js-status"></span></div>
+<section class="kb js-kb"></section>
+<div class="engines js-engines" aria-hidden="true"></div>
+<script type="module" src="m.js?v=8"></script>
+</body>
+</html>

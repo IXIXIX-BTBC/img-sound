@@ -4,7 +4,7 @@
 // to us as a stream (js/out.js), and we play its notes through its own functions. So a Dub track sounds exactly
 // like the mode it comes from, with the Sound (= that page's preset) copied into the session.
 // Patterns are kept as note data (editable later) + XY / button moves. Sound is only written out (Rec Out).
-import { speakerOut, outMeter } from '../js/out.js?v=4';
+import { speakerOut, outMeter } from '../js/out.js?v=5';
 import { getBpm, setBpm, onBpm } from '../js/tempo.js?v=1';
 import { restore } from '../js/presets.js?v=2';
 import { DEFAULT_SOUNDS } from '../js/default-sounds.js?v=5';

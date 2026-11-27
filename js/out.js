@@ -19,5 +19,6 @@ export async function speakerOut(c, mute) {
   outMeter.l = mk(2048); outMeter.r = mk(2048); outMeter.mono = mk(32768); // up to ~0.7 s for the Now Playing zoom
   node.connect(split); split.connect(outMeter.l, 0); split.connect(outMeter.r, 1); node.connect(outMeter.mono);
   outMeter.ctx = c;
+  window.__outMeter = outMeter; // the phone screen (m/) draws its wave from here
   return node;
 }

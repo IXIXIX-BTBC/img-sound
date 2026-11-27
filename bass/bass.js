@@ -5,7 +5,7 @@ import { readableImages } from '../js/heic.js?v=2';
 import { presetBar } from '../js/presets.js?v=2';
 import { finishRack } from '../js/finish.js?v=9';
 import { getBpm, setBpm, onBpm } from '../js/tempo.js?v=1';
-import { speakerOut } from '../js/out.js?v=4';
+import { speakerOut } from '../js/out.js?v=5';
 import { measure, toCharacter, CHAR_LABELS, areaWaves, gritFromArea, PLAIN_GRIT, wobblePaths, wobbleSource, wobbleFrames, SAW_TABLE } from './readarea.js?v=9';
 import { makeEq, eqResponse, bandResponse, EQ_TYPES, EQ_DEFAULT } from '../js/eq.js?v=3';
 import { PHRASES, toSteps, RATE_LABEL } from './phrases.js?v=1';
@@ -521,7 +521,9 @@ $('.js-addscene')?.addEventListener('click', async () => {
   status(); drawSpec(); setPhotoOn(true); setMode(0);
 })();
 $$('[data-ab]').forEach((b) => b.addEventListener('click', () => setPhotoOn(b.dataset.ab === '1')));
-window.__bs = { ensureCtx, pad, sendXY, setMode, startSeq, stopSeq, get seqOn() { return seqOn; }, set seqSel(v) { seqSel = v; }, get eq() { return eq; }, eqResponse, S, press, release, panic, setHold, useImage, get ch() { return ch; }, setPhotoOn, get photoOn() { return photoOn; }, get meas() { return meas; }, get an() { return an; }, get ctx() { return ctx; }, update };
+// the phone screen (m/) sets the reading area as fractions of the photo (null = all of it)
+function setArea(f) { if (!img) return; const W = ovCv.width, H = ovCv.height; S.rect = f ? { x0: Math.round(f.x0 * W), y0: Math.round(f.y0 * H), x1: Math.max(Math.round(f.x0 * W) + 4, Math.round(f.x1 * W)), y1: Math.max(Math.round(f.y0 * H) + 4, Math.round(f.y1 * H)) } : null; drawOverlay(); update(); savePhotoRect(); }
+window.__bs = { setArea, get hasImage() { return !!img; }, ensureCtx, pad, sendXY, setMode, startSeq, stopSeq, get seqOn() { return seqOn; }, set seqSel(v) { seqSel = v; }, get eq() { return eq; }, eqResponse, S, press, release, panic, setHold, useImage, get ch() { return ch; }, setPhotoOn, get photoOn() { return photoOn; }, get meas() { return meas; }, get an() { return an; }, get ctx() { return ctx; }, update };
 
 /* ---------- Presets: save / load this page's sound settings by name ---------- */
 presetBar($('.js-presets'), { page: 'bass' });

@@ -3,7 +3,7 @@ import { countRows, rowTable } from './rows.js?v=7';
 import { presetBar } from '../js/presets.js?v=2';
 import { finishRack } from '../js/finish.js?v=9';
 import { getBpm, setBpm, onBpm } from '../js/tempo.js?v=1';
-import { speakerOut } from '../js/out.js?v=4';
+import { speakerOut } from '../js/out.js?v=5';
 import { noteName, countPixels, rowWaves, buildTable } from '../pixel/pixels.js?v=23';
 let waveRows = [];
 import * as DB from '../js/store.js?v=6';
@@ -188,7 +188,9 @@ function drawOverlay() {
 }
 
 /* ---------- Photos (shared list with the ambient page) ---------- */
-function useImage(srcImg) {
+let fullSrc = null; // the photo as chosen (setArea crops from it)
+function useImage(srcImg, crop) {
+  if (!crop) fullSrc = srcImg;
   const sc = Math.min(1, 480 / Math.max(srcImg.width, srcImg.height));
   const w = Math.max(1, Math.round(srcImg.width * sc)), h = Math.max(1, Math.round(srcImg.height * sc));
   imgCv.width = ovCv.width = w; imgCv.height = ovCv.height = h;
@@ -390,7 +392,9 @@ setKeyOct(S.keyOct);
 })();
 requestAnimationFrame(drawOverlay);
 
-window.__ld = { S, press, release, panic, ensureCtx, get table() { return table; }, get lead() { return lead; }, get ctx() { return ctx; }, get gain() { return gain; }, useImage, get liveRow() { return liveRow; } };
+// the phone screen (m/): Bolt reads rows across the whole picture, so the area is used as a crop of the photo
+function setArea(f) { if (!fullSrc) return; if (!f) { useImage(fullSrc, true); return; } const W = fullSrc.width, H = fullSrc.height, c = document.createElement('canvas'); c.width = Math.max(4, Math.round((f.x1 - f.x0) * W)); c.height = Math.max(4, Math.round((f.y1 - f.y0) * H)); c.getContext('2d').drawImage(fullSrc, f.x0 * W, f.y0 * H, c.width, c.height, 0, 0, c.width, c.height); useImage(c, true); }
+window.__ld = { setArea, get hasImage() { return !!img; }, S, press, release, panic, ensureCtx, get table() { return table; }, get lead() { return lead; }, get ctx() { return ctx; }, get gain() { return gain; }, useImage, get liveRow() { return liveRow; } };
 
 /* ---------- Presets: save / load this page's sound settings by name ---------- */
 presetBar($('.js-presets'), { page: 'lead' });

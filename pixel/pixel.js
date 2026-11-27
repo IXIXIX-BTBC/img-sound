@@ -3,7 +3,7 @@ import { countPixels, toPartials, noteName, mtof, envelopes, rowWaves, buildTabl
 import { presetBar } from '../js/presets.js?v=2';
 import { bindBpm } from '../js/tempo.js?v=1';
 import { finishRack } from '../js/finish.js?v=9';
-import { speakerOut } from '../js/out.js?v=4';
+import { speakerOut } from '../js/out.js?v=5';
 import { noteOrderUI } from '../js/note-order.js?v=3';
 import { noiseSet, NOISE_TYPES } from '../js/noise.js?v=1';
 import * as DB from '../js/store.js?v=6';
@@ -901,7 +901,9 @@ const loadSource = (srcImg, name) => addPhoto(srcImg, name || 'テスト');
   loadScenes();
 })();
 
-window.__px = { ensureCtx, get wander() { return wander; }, wanderState, get scenes() { return scenes; }, addScene, startLoop, stopLoop, get loopSrc() { return loopSrc; }, get loopOn() { return loopOn; }, get echo() { return echo; }, get pending() { return pending; }, get variants() { return variants; }, get rects() { return rects; }, get press() { return press; }, get tube() { return tube; }, get lim() { return lim; }, photos, selectPhoto, get active() { return active; }, get gain() { return gain; }, S, noteOn, noteOff, get held() { return held; }, get ctx() { return ctx; }, get cnt() { return cnt; }, get parts() { return parts; }, loadSource, fallbackImage };
+// the phone screen (m/) sets the reading area as fractions of the photo (null = all of it)
+function setArea(f) { if (!img) return; const W = img.width, H = img.height; S.rect = f ? { x0: Math.round(f.x0 * W), y0: Math.round(f.y0 * H), x1: Math.max(Math.round(f.x0 * W) + 4, Math.round(f.x1 * W)), y1: Math.max(Math.round(f.y0 * H) + 4, Math.round(f.y1 * H)) } : null; S.sel = null; recount(); }
+window.__px = { setArea, get hasImage() { return !!img; }, ensureCtx, get wander() { return wander; }, wanderState, get scenes() { return scenes; }, addScene, startLoop, stopLoop, get loopSrc() { return loopSrc; }, get loopOn() { return loopOn; }, get echo() { return echo; }, get pending() { return pending; }, get variants() { return variants; }, get rects() { return rects; }, get press() { return press; }, get tube() { return tube; }, get lim() { return lim; }, photos, selectPhoto, get active() { return active; }, get gain() { return gain; }, S, noteOn, noteOff, get held() { return held; }, get ctx() { return ctx; }, get cnt() { return cnt; }, get parts() { return parts; }, loadSource, fallbackImage };
 
 /* ---------- Presets: save / load this page's sound settings by name ---------- */
 bindBpm($('.js-bpm'), $('.js-bpm-v')); // shared tempo (used here by the tape echo's 16th-note sync)

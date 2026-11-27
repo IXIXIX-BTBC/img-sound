@@ -1,0 +1,66 @@
+/* IMG SOUND — phone screen (Figma 145:6910, 390 wide). Colours and type as the desktop screen. */
+@font-face { font-family: 'Syne'; src: url('../fonts/Syne-Regular.ttf') format('truetype'); font-weight: 400; }
+@font-face { font-family: 'UIDigits'; src: url('../fonts/Poppins-Regular-latin.woff2') format('woff2'); font-weight: 400; unicode-range: U+0030-0039; }
+:root { --dark: #1b2a13; --panel: #e0e6b4; --line: #c8d08f; --mid: #8a9a5b; --kb: 176px; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; background: #fff; color: var(--dark); font: 13px/1.2 'UIDigits', 'Syne', sans-serif; overscroll-behavior: none; }
+body { display: flex; flex-direction: column; max-width: 520px; margin: 0 auto; padding: env(safe-area-inset-top) 16px 0; height: 100dvh; overflow: hidden; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+
+.hd { display: flex; align-items: center; justify-content: space-between; height: 48px; flex: none; }
+.hd__logo { width: 80px; height: auto; display: block; }
+.tabs { display: flex; border: 1px solid var(--dark); border-radius: 2px; }
+.tabs button { padding: 6px 12px; font-size: 13px; }
+.tabs button.on { background: var(--dark); color: var(--panel); }
+
+/* the photo keeps its shape (358 x 230) when there is room; on a very short screen it gives way too (after the keyboard) */
+.photo { position: relative; flex: 0 0.7 calc(min(100vw, 520px) * 230 / 358 - 21px); min-height: 96px; margin-top: 8px; border-radius: 4px; overflow: hidden; background: #d9d9d9; touch-action: none; }
+.photo__cv { position: absolute; inset: 0; width: 100%; height: 100%; }
+.photo__row { position: absolute; left: 0; right: 0; height: 0; border-top: 1.5px dashed #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.15); pointer-events: none; } /* Bolt: the row it reads */
+.photo__area { position: absolute; border: 1.5px dashed #fff; box-shadow: 0 0 0 999px rgba(0, 0, 0, .28); pointer-events: none; }
+.photo__empty { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; color: #555; font-size: 14px; }
+/* the sound now: the Stereo view drawn over the whole photo */
+.photo__wave { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; } /* over the whole photo */
+.photo__hint { position: absolute; left: 12px; top: 10px; font-size: 10px; color: #fff; text-shadow: 0 0 4px rgba(0,0,0,.5); pointer-events: none; }
+.photo__btn { position: absolute; right: 12px; bottom: 12px; padding: 7px 12px; border-radius: 16px; background: rgba(255,255,255,.92); font-size: 13px; cursor: pointer; }
+
+.row { display: flex; align-items: center; justify-content: space-between; height: 40px; margin-top: 12px; flex: none; }
+.row__name { font-size: 18px; }
+.rnd { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 2px; background: var(--dark); color: var(--panel); }
+.rnd:active { opacity: .8; }
+
+.box { flex: none; border-radius: 2px; margin-top: 8px; }
+.box--knobs { display: flex; justify-content: space-between; padding: 14px 12px; border: 1px solid #ccc; background: #fff; }
+.knob { width: 80px; display: flex; flex-direction: column; align-items: center; gap: 6px; touch-action: none; }
+.knob svg { width: 52px; height: 52px; display: block; }
+.knob span { font-size: 13px; }
+.box--env { display: flex; align-items: center; justify-content: space-between; padding: 6px 12px; background: var(--panel); }
+.env__shape { flex: none; }
+.env__sl { display: flex; gap: 6px; flex: 1; justify-content: flex-end; }
+.sl { width: 66px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 6px; }
+.sl input { -webkit-appearance: none; appearance: none; width: 64px; height: 18px; background: none; margin: 0; touch-action: none; }
+.sl input::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(var(--dark), var(--dark)) 0 / var(--p, 50%) 100% no-repeat, var(--line); }
+.sl input::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: -5px; border-radius: 50%; background: #fff; border: 1.5px solid var(--dark); }
+.sl input::-moz-range-track { height: 6px; border-radius: 3px; background: var(--line); }
+.sl input::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--dark); }
+.sl input::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 1.5px solid var(--dark); }
+.sl span { font-size: 12px; color: var(--mid); }
+
+.oct { display: flex; align-items: center; gap: 10px; margin-top: auto; padding: 10px 0 8px; flex: none; }
+.oct button { width: 33px; height: 27px; border: 1px solid var(--dark); border-radius: 2px; font-size: 16px; }
+.oct .js-octname { font-size: 14px; min-width: 22px; text-align: center; }
+.oct__status { margin-left: auto; font-size: 11px; color: var(--mid); }
+
+/* the keyboard: the bottom edge of the screen, full width (out of the 16px side margins) */
+/* the keyboard takes what is left: 176px when there is room, shorter (down to 96px) on a short screen */
+.kb { position: relative; border-top: 1px solid var(--dark); flex: 0 1 calc(var(--kb) + env(safe-area-inset-bottom)); min-height: calc(96px + env(safe-area-inset-bottom)); margin: 0 -16px; background: var(--dark); touch-action: none; padding-bottom: env(safe-area-inset-bottom); }
+.key { position: absolute; top: 0; }
+.key--w { height: calc(100% - 4px - env(safe-area-inset-bottom)); background: #fff; border-radius: 0 0 4px 4px; }
+.key--b { height: calc((100% - env(safe-area-inset-bottom)) * 0.6); background: var(--dark); border-radius: 0 0 3px 3px; z-index: 1; }
+.key.on.key--w { background: #d3da9f; }
+.key.on.key--b { background: #56663a; }
+.key i { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; font-style: normal; font-size: 10px; color: var(--mid); }
+
+.engines { position: fixed; left: -20000px; top: 0; width: 1440px; height: 1024px; opacity: 0; pointer-events: none; }
+.engines iframe { position: absolute; inset: 0; width: 1440px; height: 1024px; border: 0; }
+[hidden] { display: none !important; }

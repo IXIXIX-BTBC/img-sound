@@ -3,7 +3,7 @@
 // 1440 x 1024 screen and MOVES the page's real controls into it (moving keeps every listener and reference).
 // What is not on the new screen stays in the old layout, which opens from the menu as "詳しい表示".
 // Stage 1 (11/19): layout + every existing feature. Stage 2: moving terrain, Sound with Scene, Project.
-import { outMeter } from './out.js?v=4';
+import { outMeter } from './out.js?v=5';
 import { snapshot, restore } from './presets.js?v=2';
 import { appLinks } from './app-link.js?v=1';
 import { projectButton } from './project.js?v=5';

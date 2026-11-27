@@ -1,6 +1,8 @@
 // One window for every mode (index.html). Each mode page runs in its own frame, made the first time it is opened and
 // then kept, so switching modes stops nothing: Dub keeps playing (and recording) while you use AIR / Bolt / Quake.
 // The pages switch with parent.__app.go(href) (js/app-link.js); the mode on screen is in the address (#AIR …).
+// phones get their own screen (m/): a touch screen narrower than a tablet. ?pc in the address keeps this one
+if (!new URLSearchParams(location.search).has('pc') && matchMedia('(pointer: coarse) and (max-width: 820px)').matches) location.replace('m/' + location.search);
 const PAGES = { AIR: 'pixel/', Bolt: 'lead/', Quake: 'bass/', Dub: 'dub/' };
 const KEY = 'photoSynth.app.mode';
 const frames = {};
